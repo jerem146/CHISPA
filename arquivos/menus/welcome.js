@@ -2,30 +2,30 @@
 
 module.exports = async function handleWelcomeCommand(sock, Info, from, args, prefix, groupState, groupManager, logger, getPermissions, BOT_PHONE, sasah) {
   try {
-    // ✅ Correção: detectar se é grupo corretamente
+    // ✅ Corrección: detectar si es grupo correctamente
     const isGroup = from.endsWith("@g.us");
 
     if (!isGroup) {
-      return sock.sendMessage(from, { text: "❌ Só funciona em grupos." }, { quoted: sasah });
+      return sock.sendMessage(from, { text: "❌ Este comando solo funciona en grupos." }, { quoted: sasah });
     }
 
-    // 🔒 Verificar permissões de administrador ou dono
+    // 🔒 Verificar permisos de administrador o dueño
     const perms = await getPermissions(sock, from, Info.key.participant, BOT_PHONE);
     if (!perms.isAdmin && !perms.isOwnerGroup) {
-      return sock.sendMessage(from, { text: "❌ Apenas administradores podem usar este comando." }, { quoted: sasah });
+      return sock.sendMessage(from, { text: "❌ Solo los administradores pueden usar este comando." }, { quoted: sasah });
     }
 
-    // 🔧 Obter estado atual do grupo
+    // 🔧 Obtener estado actual del grupo
     const opt = (args[0] || "").toLowerCase();
     const groupData = groupState.get(from) || { welcome: false };
 
-    // ✅ Ativar / Desativar o sistema
+    // ✅ Activar / Desactivar el sistema
     if (opt === "on" || opt === "off") {
       groupData.welcome = opt === "on";
       groupState.set(from, groupData);
 
       logger.log("CONFIG_CHANGED", {
-        setting: "Boas-vindas do grupo",
+        setting: "Bienvenida del grupo",
         value: groupData.welcome,
         groupId: from,
         groupName: perms.groupName,
@@ -37,18 +37,18 @@ module.exports = async function handleWelcomeCommand(sock, Info, from, args, pre
       await groupManager.saveGroupData(sock, from, "settings_changed");
 
       return sock.sendMessage(from, { 
-        text: `🎉 Sistema de boas-vindas do grupo ${groupData.welcome ? "✅ ATIVADO" : "❌ DESATIVADO"}`
+        text: `🎉 El sistema de bienvenida del grupo ha sido ${groupData.welcome ? "✅ *ACTIVADO*" : "❌ *DESACTIVADO*"}.`
       }, { quoted: sasah });
     }
 
-    // 📊 Mostrar status atual
+    // 📊 Mostrar estado actual
     if (opt === "status") {
       return sock.sendMessage(from, {
-        text: `🎚️ *Status do sistema de boas-vindas:*\n• Grupo: ${groupData.welcome ? "✅ ON" : "❌ OFF"}`
+        text: `🎚️ *Estado del sistema de bienvenida:*\n• Grupo: ${groupData.welcome ? "✅ ON" : "❌ OFF"}`
       }, { quoted: sasah });
     }
 
-    // 🧪 Teste de boas-vindas
+    // 🧪 Prueba de bienvenida
     if (opt === "test") {
       const sender = Info.key.participant || Info.key.remoteJid;
       const senderNumber = String(sender).split("@")[0];
@@ -58,12 +58,12 @@ module.exports = async function handleWelcomeCommand(sock, Info, from, args, pre
       const thumb   = ppUser || ppGroup || fallbackImg;
 
       return sock.sendMessage(from, {
-        text: `Olá @${senderNumber}, isto é um *preview* do sistema de boas-vindas.`,
+        text: `Hola @${senderNumber}, este es un *preview* del sistema de bienvenida.`,
         mentions: [sender],
         contextInfo: {
           mentionedJid: [sender],
           externalAdReply: {
-            title: "👋 Seja Bem-vindo!",
+            title: "👋 ¡Bienvenido!",
             body: `${senderNumber}@s.whatsapp.net`,
             mediaType: 1,
             renderLargerThumbnail: true,
@@ -74,13 +74,13 @@ module.exports = async function handleWelcomeCommand(sock, Info, from, args, pre
       }, { quoted: sasah });
     }
 
-    // 📘 Menu de ajuda
+    // 📘 Menú de ayuda
     return sock.sendMessage(from, { 
-      text: `⚙️ *Configurar boas-vindas do grupo*\n\n• ${prefix}welcome on\n• ${prefix}welcome off\n• ${prefix}welcome status\n• ${prefix}welcome test`
+      text: `⚙️ *Configurar la bienvenida del grupo*\n\n• ${prefix}welcome on\n• ${prefix}welcome off\n• ${prefix}welcome status\n• ${prefix}welcome test`
     }, { quoted: sasah });
 
   } catch (err) {
-    console.error("❌ Erro no comando 'welcome':", err);
-    return sock.sendMessage(from, { text: "⚠️ Ocorreu um erro ao executar o comando de boas-vindas." }, { quoted: sasah });
+    console.error("❌ Error en el comando 'welcome':", err);
+    return sock.sendMessage(from, { text: "⚠️ Ocurrió un error al ejecutar el comando de bienvenida." }, { quoted: sasah });
   }
 };
